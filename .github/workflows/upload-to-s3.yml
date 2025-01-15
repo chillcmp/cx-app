@@ -36,4 +36,4 @@ jobs:
 
     - name: Upload files to S3
       run: |
-        aws s3 cp cx-app.zip s3://${{ secrets.S3_BUCKET_NAME }}/ --recursive
+        aws s3 cp cx-app.zip s3://${{ secrets.S3_BUCKET_NAME }}/
