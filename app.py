@@ -1,6 +1,6 @@
+import requests
 from flask import Flask, render_template, send_from_directory
 import boto3
-from botocore.exceptions import NoCredentialsError
 
 app = Flask(__name__)
 
@@ -18,18 +18,28 @@ def display_image():
     return send_from_directory(image_folder, image_name)
 
 
+def get_region_from_metadata():
+    metadata_url = "http://169.254.169.254/latest/meta-data/placement/availability-zone"
+    response = requests.get(metadata_url)
+    response.raise_for_status()
+    availability_zone = response.text
+    return availability_zone[:-1]
+
+
 def get_region_and_az():
     try:
-        session = boto3.session.Session()
-        current_region = session.region_name
+        region = get_region_from_metadata()
+        ec2 = boto3.client('ec2', region_name=region)
 
-        ec2_metadata = boto3.client('ec2', region_name=current_region)
-        response = ec2_metadata.describe_availability_zones()
-        current_az = response['AvailabilityZones'][0]['ZoneName']
+        instance_id = requests.get("http://169.254.169.254/latest/meta-data/instance-id").text
 
-        return f'Region: {current_region}, Availability Zone: {current_az}'
-    except NoCredentialsError:
-        return "Credentials not available"
+        response = ec2.describe_instances(InstanceIds=[instance_id])
+        availability_zone = response["Reservations"][0]["Instances"][0]["Placement"]["AvailabilityZone"]
+
+        return f'Region: {region}, Availability Zone: {availability_zone}'
+
+    except Exception as e:
+        return f"Cannot fetch region and AZ: {e}"
 
 
 if __name__ == '__main__':
