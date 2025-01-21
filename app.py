@@ -1,45 +1,51 @@
-import requests
+import os
+
 from flask import Flask, render_template, send_from_directory
-import boto3
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = './uploads'
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 
 @app.route('/')
-def home():
-    region_and_az = get_region_and_az()
-    return render_template('index.html', region_and_az=region_and_az)
+def index():
+    images = os.listdir(app.config['UPLOAD_FOLDER'])
+    images = [file for file in images if allowed_file(file)]
+    return render_template('index.html', images=images)
 
 
-@app.route('/image')
-def display_image():
-    image_folder = './'
-    image_name = 'lula.jpg'
-    return send_from_directory(image_folder, image_name)
+@app.route('/uploads/<path:filename>')
+def uploads(filename):
+    return send_from_directory('uploads', filename)
 
 
-def get_region_from_metadata():
-    metadata_url = "http://169.254.169.254/latest/meta-data/placement/availability-zone"
-    response = requests.get(metadata_url)
-    response.raise_for_status()
-    availability_zone = response.text
-    return availability_zone[:-1]
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    pass
 
 
-def get_region_and_az():
-    try:
-        region = get_region_from_metadata()
-        ec2 = boto3.client('ec2', region_name=region)
+@app.route('/delete', methods=['POST'])
+def delete_file():
+    pass
 
-        instance_id = requests.get("http://169.254.169.254/latest/meta-data/instance-id").text
 
-        response = ec2.describe_instances(InstanceIds=[instance_id])
-        availability_zone = response["Reservations"][0]["Instances"][0]["Placement"]["AvailabilityZone"]
+@app.route('/download/<filename>', methods=['GET'])
+def download_file(filename):
+    pass
 
-        return f'Region: {region}, Availability Zone: {availability_zone}'
 
-    except Exception as e:
-        return f"Cannot fetch region and AZ: {e}"
+@app.route('/metadata/<filename>', methods=['GET'])
+def show_metadata(filename):
+    pass
+
+
+@app.route('/metadata/random', methods=['GET'])
+def random_metadata():
+    pass
 
 
 if __name__ == '__main__':

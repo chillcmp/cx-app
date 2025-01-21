@@ -3,11 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Show me the Dog</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>Pets Gallery</title>
 </head>
 <body>
-    <h1>Welcome!</h1>
-    <p>{{ region_and_az }}</p>
-    <button onclick="window.location.href='/image';">Show me the Dog</button>
+    <header>
+        <h1>Pets Gallery</h1>
+    </header>
+    <div class="container">
+
+        <div class="sidebar">
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <input type="file" id="file-upload" name="file" />
+                <button type="submit">Upload</button>
+            </form>
+            <form id="actions-form">
+                <input type="text" id="file-name" name="filename" placeholder="Enter the file name" />
+
+                <button type="button" id="delete-button">Delete</button>
+                <button type="button" id="download-button">Download</button>
+                <button type="button" id="metadata-button">Show metadata</button>
+                <button type="button" id="random-metadata-button">Show random metadata</button>
+            </form>
+        </div>
+
+        <div class="main">
+            {% for image in images %}
+            <div class="image-preview-container">
+                <img src="{{ url_for('uploads', filename=image) }}" alt="">
+                <p>{{ image }}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+     <footer>
+        <p>2025 S.L.</p>
+     </footer>
+
 </body>
 </html>
