@@ -46,7 +46,8 @@ def check_file_in_post_request(view_func):
     @wraps(view_func)
     def wrapped_view(**kwargs):
         file = request.files.get('file')
-        if file is None or file.filename == '':
+        filename = file.filename if file else request.form.get('filename', '')
+        if filename == '':
             kwargs["error"] = 'No selected file'
 
         return view_func(**kwargs)

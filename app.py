@@ -37,6 +37,10 @@ def upload_file(error: str = None):
 def delete_file(error: str = None):
     if error:
         return redirect(url_for('index', action_error=error))
+
+    filename = request.form['filename']
+    file_path = os.path.join(AppConfig.UPLOAD_FOLDER, filename)
+    os.remove(file_path)
     return redirect(url_for('index'))
 
 
