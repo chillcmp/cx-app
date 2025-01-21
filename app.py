@@ -49,7 +49,9 @@ def delete_file(error: str = None):
 def download_file(error: str = None):
     if error:
         return redirect(url_for('index', action_error=error))
-    return redirect(url_for('index'))
+
+    filename = request.args.get('filename')
+    return send_from_directory(AppConfig.UPLOAD_FOLDER, filename, as_attachment=True)
 
 
 @app.route('/metadata', methods=['GET'])
