@@ -15,6 +15,11 @@
         <div class="sidebar">
             <form action="/upload" method="post" enctype="multipart/form-data">
                 <input type="file" id="file-upload" name="file" />
+
+                {% if request.args.get('error') %}
+                    <p class="error">{{ request.args.get('error') }}</p>
+                {% endif %}
+
                 <button type="submit">Upload</button>
             </form>
             <form id="actions-form">

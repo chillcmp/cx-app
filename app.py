@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = './uploads'
@@ -25,7 +25,18 @@ def uploads(filename):
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    pass
+    if 'file' not in request.files:
+        return redirect(url_for('index', error='No file part in the request'))
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return redirect(url_for('index', error='No selected file'))
+
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file.save(file_path)
+
+    return redirect(url_for('index'))
 
 
 @app.route('/delete', methods=['POST'])
