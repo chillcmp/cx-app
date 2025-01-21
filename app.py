@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
@@ -59,7 +60,20 @@ def download_file(error: str = None):
 def show_metadata(error: str = None):
     if error:
         return redirect(url_for('index', action_error=error))
-    return redirect(url_for('index'))
+
+    filename = request.args.get('filename')
+    file_path = os.path.join(AppConfig.UPLOAD_FOLDER, filename)
+
+    modified_timestamp = os.path.getmtime(file_path)
+    modified_datetime = datetime.fromtimestamp(modified_timestamp)
+
+    metadata = {'name': filename,
+                'size': os.path.getsize(file_path),
+                'modified_time': modified_datetime.strftime('%Y-%m-%d'),
+                'extension': os.path.splitext(file_path)[1]}
+    metadata_str = '\n'.join(f'{key}: {value}' for key, value in metadata.items())
+
+    return redirect(url_for('index', metadata=metadata_str))
 
 
 @app.route('/random-metadata', methods=['GET'])

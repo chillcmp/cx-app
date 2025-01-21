@@ -36,6 +36,10 @@
                 <button type="submit" onclick="setMethod('get');" formaction="/random-metadata" id="random-metadata-button">Show random metadata</button>
             </form>
 
+            {% if request.args.get('metadata') %}
+                <p class="metadata-block">{{ request.args.get('metadata') }}</p>
+            {% endif %}
+
             <script>
             function setMethod(method) {
                 document.getElementById('actions-form').method = method;
