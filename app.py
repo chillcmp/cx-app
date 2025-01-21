@@ -4,7 +4,8 @@ from datetime import datetime
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
 from config import AppConfig
-from utils import get_uploaded_images, check_file_in_post_request, check_file_in_get_request
+from utils.validations import check_file_in_post_request, check_file_in_get_request
+from utils.image_utils import get_uploaded_images
 
 app = Flask(__name__)
 app.config.from_object(AppConfig)
