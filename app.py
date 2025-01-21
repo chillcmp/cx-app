@@ -3,7 +3,7 @@ import os
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
 from config import AppConfig
-from utils import get_uploaded_images
+from utils import get_uploaded_images, check_file_in_post_request, check_file_in_get_request
 
 app = Flask(__name__)
 app.config.from_object(AppConfig)
@@ -21,39 +21,47 @@ def uploads(filename):
 
 
 @app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return redirect(url_for('index', error='No file part in the request'))
+@check_file_in_post_request
+def upload_file(error: str = None):
+    if error:
+        return redirect(url_for('index', upload_error=error))
 
     file = request.files['file']
-
-    if file.filename == '':
-        return redirect(url_for('index', error='No selected file'))
-
     file_path = os.path.join(AppConfig.UPLOAD_FOLDER, file.filename)
     file.save(file_path)
-
     return redirect(url_for('index'))
 
 
 @app.route('/delete', methods=['POST'])
-def delete_file():
-    pass
+@check_file_in_post_request
+def delete_file(error: str = None):
+    if error:
+        return redirect(url_for('index', action_error=error))
+    return redirect(url_for('index'))
 
 
-@app.route('/download/<filename>', methods=['GET'])
-def download_file(filename):
-    pass
+@app.route('/download', methods=['GET'])
+@check_file_in_get_request
+def download_file(error: str = None):
+    if error:
+        return redirect(url_for('index', action_error=error))
+    return redirect(url_for('index'))
 
 
-@app.route('/metadata/<filename>', methods=['GET'])
-def show_metadata(filename):
-    pass
+@app.route('/metadata', methods=['GET'])
+@check_file_in_get_request
+def show_metadata(error: str = None):
+    if error:
+        return redirect(url_for('index', action_error=error))
+    return redirect(url_for('index'))
 
 
-@app.route('/metadata/random', methods=['GET'])
-def random_metadata():
-    pass
+@app.route('/random-metadata', methods=['GET'])
+@check_file_in_get_request
+def random_metadata(error: str = None):
+    if error:
+        return redirect(url_for('index', action_error=error))
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':

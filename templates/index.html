@@ -16,20 +16,31 @@
             <form action="/upload" method="post" enctype="multipart/form-data">
                 <input type="file" id="file-upload" name="file" />
 
-                {% if request.args.get('error') %}
-                    <p class="error">{{ request.args.get('error') }}</p>
+                {% if request.args.get('upload_error') %}
+                    <p class="error">{{ request.args.get('upload_error') }}</p>
                 {% endif %}
 
                 <button type="submit">Upload</button>
             </form>
-            <form id="actions-form">
+
+            <form id="actions-form" method="get">
                 <input type="text" id="file-name" name="filename" placeholder="Enter the file name" />
 
-                <button type="button" id="delete-button">Delete</button>
-                <button type="button" id="download-button">Download</button>
-                <button type="button" id="metadata-button">Show metadata</button>
-                <button type="button" id="random-metadata-button">Show random metadata</button>
+                {% if request.args.get('action_error') %}
+                    <p class="error">{{ request.args.get('action_error') }}</p>
+                {% endif %}
+
+                <button type="submit" onclick="setMethod('post');" formaction="/delete" id="delete-button">Delete</button>
+                <button type="submit" onclick="setMethod('get');" formaction="/download" id="download-button">Download</button>
+                <button type="submit" onclick="setMethod('get');" formaction="/metadata" id="metadata-button">Show metadata</button>
+                <button type="submit" onclick="setMethod('get');" formaction="/random-metadata" id="random-metadata-button">Show random metadata</button>
             </form>
+
+            <script>
+            function setMethod(method) {
+                document.getElementById('actions-form').method = method;
+            }
+            </script>
         </div>
 
         <div class="main">

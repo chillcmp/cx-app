@@ -40,3 +40,32 @@ def allowed_file(filename):
 def get_uploaded_images():
     images = os.listdir(AppConfig.UPLOAD_FOLDER)
     return [file for file in images if allowed_file(file)]
+
+
+def check_file_in_post_request(view_func):
+    @wraps(view_func)
+    def wrapped_view(**kwargs):
+        file = request.files.get('file')
+        if file is None or file.filename == '':
+            kwargs["error"] = 'No selected file'
+
+        return view_func(**kwargs)
+
+    return wrapped_view
+
+
+def check_file_in_get_request(view_func):
+    @wraps(view_func)
+    def wrapped_view(**kwargs):
+        file = request.args.get('filename')
+        images = os.listdir(AppConfig.UPLOAD_FOLDER)
+        images = [file for file in images if allowed_file(file)]
+
+        if file == '':
+            kwargs["error"] = 'No selected file'
+        elif file not in images:
+            kwargs["error"] = 'Unknown file'
+
+        return view_func(**kwargs)
+
+    return wrapped_view
