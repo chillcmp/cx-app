@@ -1,11 +1,11 @@
 import os
-from datetime import datetime
+import random
 
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
 from config import AppConfig
+from utils.image_utils import get_uploaded_images, get_metadata_str
 from utils.validations import check_file_in_post_request, check_file_in_get_request
-from utils.image_utils import get_uploaded_images
 
 app = Flask(__name__)
 app.config.from_object(AppConfig)
@@ -64,25 +64,20 @@ def show_metadata(error: str = None):
 
     filename = request.args.get('filename')
     file_path = os.path.join(AppConfig.UPLOAD_FOLDER, filename)
-
-    modified_timestamp = os.path.getmtime(file_path)
-    modified_datetime = datetime.fromtimestamp(modified_timestamp)
-
-    metadata = {'name': filename,
-                'size': os.path.getsize(file_path),
-                'modified_time': modified_datetime.strftime('%Y-%m-%d'),
-                'extension': os.path.splitext(file_path)[1]}
-    metadata_str = '\n'.join(f'{key}: {value}' for key, value in metadata.items())
-
+    metadata_str = get_metadata_str(file_path)
     return redirect(url_for('index', metadata=metadata_str))
 
 
 @app.route('/random-metadata', methods=['GET'])
-@check_file_in_get_request
 def random_metadata(error: str = None):
     if error:
         return redirect(url_for('index', action_error=error))
-    return redirect(url_for('index'))
+
+    images = get_uploaded_images()
+    random_image = random.choice(images)
+    file_path = os.path.join(AppConfig.UPLOAD_FOLDER, random_image)
+    metadata_str = get_metadata_str(file_path)
+    return redirect(url_for('index', metadata=metadata_str))
 
 
 if __name__ == '__main__':
