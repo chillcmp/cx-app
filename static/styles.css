@@ -14,8 +14,11 @@ header {
 }
 
 header h1 {
+    font-family: "Barrio", serif;
+    font-weight: 400;
+    font-style: normal;
     margin: 0;
-    font-size: 24px;
+    font-size: 40px;
     color: #333;
 }
 
