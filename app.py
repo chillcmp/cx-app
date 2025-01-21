@@ -19,6 +19,11 @@ def index():
     return render_template('index.html', images=images, region_and_az=region_and_az)
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+
 @app.route('/uploads/<path:filename>')
 def uploads(filename):
     return send_from_directory('uploads', filename)
