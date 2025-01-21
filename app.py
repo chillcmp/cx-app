@@ -4,6 +4,7 @@ import random
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
 from config import AppConfig
+from utils.az_utils import get_region_and_az
 from utils.image_utils import get_uploaded_images, get_metadata_str
 from utils.validations import check_file_in_post_request, check_file_in_get_request
 
@@ -14,7 +15,8 @@ app.config.from_object(AppConfig)
 @app.route('/')
 def index():
     images = get_uploaded_images()
-    return render_template('index.html', images=images)
+    region_and_az = get_region_and_az()
+    return render_template('index.html', images=images, region_and_az=region_and_az)
 
 
 @app.route('/uploads/<path:filename>')
