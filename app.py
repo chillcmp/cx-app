@@ -2,19 +2,16 @@ import os
 
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for
 
+from config import AppConfig
+from utils import get_uploaded_images
+
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = './uploads'
-app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+app.config.from_object(AppConfig)
 
 
 @app.route('/')
 def index():
-    images = os.listdir(app.config['UPLOAD_FOLDER'])
-    images = [file for file in images if allowed_file(file)]
+    images = get_uploaded_images()
     return render_template('index.html', images=images)
 
 
@@ -33,7 +30,7 @@ def upload_file():
     if file.filename == '':
         return redirect(url_for('index', error='No selected file'))
 
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+    file_path = os.path.join(AppConfig.UPLOAD_FOLDER, file.filename)
     file.save(file_path)
 
     return redirect(url_for('index'))

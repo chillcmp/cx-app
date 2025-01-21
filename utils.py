@@ -1,5 +1,12 @@
+import os
+
 import boto3
 import requests
+
+from flask import request, redirect, url_for
+from functools import wraps
+
+from config import AppConfig
 
 
 def get_region_from_metadata():
@@ -24,4 +31,12 @@ def get_region_and_az():
 
     except Exception as e:
         return f"Cannot fetch region and AZ: {e}"
-    
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in AppConfig.ALLOWED_EXTENSIONS
+
+
+def get_uploaded_images():
+    images = os.listdir(AppConfig.UPLOAD_FOLDER)
+    return [file for file in images if allowed_file(file)]
