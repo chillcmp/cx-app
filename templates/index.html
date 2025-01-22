@@ -52,9 +52,9 @@
         </div>
 
         <div class="main">
-            {% for image in images %}
+            {% for image, url in images %}
             <div class="image-preview-container">
-                <img src="{{ url_for('uploads', filename=image) }}" alt="">
+                <img src="{{ url }}" alt="">
                 <p>{{ image }}</p>
             </div>
             {% endfor %}
