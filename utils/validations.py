@@ -4,7 +4,7 @@ from flask import request
 from functools import wraps
 
 from config import AppConfig
-from utils.image_utils import allowed_file
+from services.image_service import allowed_file
 
 
 def check_file_in_post_request(view_func):

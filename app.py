@@ -1,20 +1,24 @@
-import os
-import random
 from io import BytesIO
 
+import pymysql
 import requests
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, send_file
 
 from config import AppConfig
 from extensions.database import db
+from services.image_service import ImageService
+from services.metadata_service import MetadataService
 from utils.az_utils import get_region_and_az
-from utils.image_utils import ImageService, get_metadata_str
-from utils.validations import check_file_in_post_request, check_file_in_get_request
+from utils.validations import check_file_in_post_request
+
+pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 app.config.from_object(AppConfig)
 db.init_app(app)
+
 image_service = ImageService()
+metadata_service = MetadataService()
 
 
 with app.app_context():
@@ -45,23 +49,23 @@ def upload_file(error: str = None):
         return redirect(url_for('index', upload_error=error))
 
     image = request.files['file']
+    metadata_service.write_metadata(image)
     image_service.upload_image(image)
     return redirect(url_for('index'))
 
 
 @app.route('/delete', methods=['POST'])
-@check_file_in_post_request
 def delete_file(error: str = None):
     if error:
         return redirect(url_for('index', action_error=error))
 
     image_name = request.form['filename']
+    metadata_service.delete_metadata(image_name)
     image_service.delete_image(image_name)
     return redirect(url_for('index'))
 
 
 @app.route('/download', methods=['GET'])
-@check_file_in_get_request
 def download_file(error: str = None):
     if error:
         return redirect(url_for('index', action_error=error))
@@ -77,27 +81,22 @@ def download_file(error: str = None):
 
 
 @app.route('/metadata', methods=['GET'])
-@check_file_in_get_request
-def show_metadata(error: str = None):
-    if error:
-        return redirect(url_for('index', action_error=error))
-
-    filename = request.args.get('filename')
-    file_path = os.path.join(AppConfig.UPLOAD_FOLDER, filename)
-    metadata_str = get_metadata_str(file_path)
-    return redirect(url_for('index', metadata=metadata_str))
+def show_metadata():
+    image_name = request.args.get('filename')
+    metadata = metadata_service.get_metadata(image_name)
+    if metadata:
+        return redirect(url_for('index', metadata=metadata.to_str()))
+    else:
+        return redirect(url_for('index', action_error='Unknown file'))
 
 
 @app.route('/random-metadata', methods=['GET'])
-def random_metadata(error: str = None):
-    if error:
-        return redirect(url_for('index', action_error=error))
-
-    images = image_service.get_images()
-    random_image = random.choice(images)
-    file_path = os.path.join(AppConfig.UPLOAD_FOLDER, random_image)
-    metadata_str = get_metadata_str(file_path)
-    return redirect(url_for('index', metadata=metadata_str))
+def random_metadata():
+    metadata = metadata_service.get_random_metadata()
+    if metadata:
+        return redirect(url_for('index', metadata=metadata.to_str()))
+    else:
+        return redirect(url_for('index', action_error='No pets in gallery :('))
 
 
 if __name__ == '__main__':
