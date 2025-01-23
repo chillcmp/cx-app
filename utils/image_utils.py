@@ -14,7 +14,7 @@ class ImageService:
 
     def __init__(self):
         self.s3_client = boto3.client('s3')
-        self.bucket_name = os.getenv("S3_BUCKET_NAME")
+        self.bucket_name = AppConfig.S3_BUCKET_NAME
         self.presigned_url_lifetime_s = AppConfig.PRESIGNED_URL_LIFETIME_S
         self.urls_cache = {}
 

@@ -6,13 +6,19 @@ import requests
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, send_file
 
 from config import AppConfig
+from extensions.database import db
 from utils.az_utils import get_region_and_az
 from utils.image_utils import ImageService, get_metadata_str
 from utils.validations import check_file_in_post_request, check_file_in_get_request
 
 app = Flask(__name__)
 app.config.from_object(AppConfig)
+db.init_app(app)
 image_service = ImageService()
+
+
+with app.app_context():
+    db.create_all()
 
 
 @app.route('/')
