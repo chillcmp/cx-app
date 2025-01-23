@@ -1,5 +1,6 @@
-from extensions.database import db
 from datetime import datetime, timezone
+
+from extensions.database import db
 
 
 class ImageMetadata(db.Model):

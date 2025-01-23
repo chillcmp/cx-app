@@ -2,69 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/styles.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="/static/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com" rel="preconnect">
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect">
     <link href="https://fonts.googleapis.com/css2?family=Barrio&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link href="{{ url_for('static', filename='favicon.ico') }}" rel="icon" type="image/x-icon">
     <title>Pets Gallery</title>
 </head>
 <body>
-    <header>
-        <h1>Pets Gallery</h1>
-    </header>
-    <div class="container">
+<header>
+    <h1>Pets Gallery</h1>
+</header>
+<div class="container">
 
-        <div class="sidebar">
-            <form action="/upload" method="post" enctype="multipart/form-data">
-                <input type="file" id="file-upload" name="file" />
+    <div class="sidebar">
+        <form action="/upload" enctype="multipart/form-data" method="post">
+            <input id="file-upload" name="file" type="file"/>
 
-                {% if request.args.get('upload_error') %}
-                    <p class="error">{{ request.args.get('upload_error') }}</p>
-                {% endif %}
-
-                <button type="submit">Upload</button>
-            </form>
-
-            <form id="actions-form" method="get">
-                <input type="text" id="file-name" name="filename" placeholder="Enter the file name" />
-
-                {% if request.args.get('action_error') %}
-                    <p class="error">{{ request.args.get('action_error') }}</p>
-                {% endif %}
-
-                <button type="submit" onclick="setMethod('post');" formaction="/delete" id="delete-button">Delete</button>
-                <button type="submit" onclick="setMethod('get');" formaction="/download" id="download-button">Download</button>
-                <button type="submit" onclick="setMethod('get');" formaction="/metadata" id="metadata-button">Show metadata</button>
-                <button type="submit" onclick="setMethod('get');" formaction="/random-metadata" id="random-metadata-button">Show random metadata</button>
-            </form>
-
-            {% if request.args.get('metadata') %}
-                <p class="metadata-block">{{ request.args.get('metadata') }}</p>
+            {% if request.args.get('upload_error') %}
+            <p class="error">{{ request.args.get('upload_error') }}</p>
             {% endif %}
 
-            <script>
+            <button type="submit">Upload</button>
+        </form>
+
+        <form id="actions-form" method="get">
+            <input id="file-name" name="filename" placeholder="Enter the file name" type="text"/>
+
+            {% if request.args.get('action_error') %}
+            <p class="error">{{ request.args.get('action_error') }}</p>
+            {% endif %}
+
+            <button formaction="/delete" id="delete-button" onclick="setMethod('post');" type="submit">Delete</button>
+            <button formaction="/download" id="download-button" onclick="setMethod('get');" type="submit">Download
+            </button>
+            <button formaction="/metadata" id="metadata-button" onclick="setMethod('get');" type="submit">Show
+                metadata
+            </button>
+            <button formaction="/random-metadata" id="random-metadata-button" onclick="setMethod('get');" type="submit">
+                Show random metadata
+            </button>
+        </form>
+
+        {% if request.args.get('metadata') %}
+        <p class="metadata-block">{{ request.args.get('metadata') }}</p>
+        {% endif %}
+
+        <script>
             function setMethod(method) {
                 document.getElementById('actions-form').method = method;
             }
-            </script>
-        </div>
-
-        <div class="main">
-            {% for image, url in images %}
-            <div class="image-preview-container">
-                <img src="{{ url }}" alt="">
-                <p>{{ image }}</p>
-            </div>
-            {% endfor %}
-        </div>
-
+        </script>
     </div>
 
-     <footer>
-        <p>{{ region_and_az }}</p>
-     </footer>
+    <div class="main">
+        {% for image, url in images %}
+        <div class="image-preview-container">
+            <img alt="" src="{{ url }}">
+            <p>{{ image }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<footer>
+    <p>{{ region_and_az }}</p>
+</footer>
 
 </body>
 </html>

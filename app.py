@@ -20,7 +20,6 @@ db.init_app(app)
 image_service = ImageService()
 metadata_service = MetadataService()
 
-
 with app.app_context():
     db.create_all()
 
