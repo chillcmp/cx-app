@@ -28,5 +28,6 @@ class MetadataService:
 
     def delete_metadata(self, filename: str):
         record = self.get_metadata(filename)
-        db.session.delete(record)
-        db.session.commit()
+        if record:
+            db.session.delete(record)
+            db.session.commit()

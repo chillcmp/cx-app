@@ -2,6 +2,7 @@ from io import BytesIO
 
 import pymysql
 import requests
+from botocore.exceptions import ClientError
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, send_file
 
 from config import AppConfig
@@ -9,7 +10,6 @@ from extensions.database import db
 from services.image_service import ImageService
 from services.metadata_service import MetadataService
 from utils.az_utils import get_region_and_az
-from utils.validations import check_file_in_post_request
 
 pymysql.install_as_MySQLdb()
 
@@ -43,46 +43,69 @@ def uploads(filename):
 
 
 @app.route('/upload', methods=['POST'])
-@check_file_in_post_request
-def upload_file(error: str = None):
-    if error:
-        return redirect(url_for('index', upload_error=error))
-
+def upload_file():
     image = request.files['file']
+    if not image:
+        return redirect(url_for('index', upload_error='No selected file'))
+
     metadata_service.write_metadata(image)
     image_service.upload_image(image)
     return redirect(url_for('index'))
 
 
 @app.route('/delete', methods=['POST'])
-def delete_file(error: str = None):
-    if error:
-        return redirect(url_for('index', action_error=error))
-
+def delete_file():
     image_name = request.form['filename']
+    if image_name == '':
+        return redirect(url_for('index', action_error='No selected file'))
+
     metadata_service.delete_metadata(image_name)
     image_service.delete_image(image_name)
     return redirect(url_for('index'))
 
 
 @app.route('/download', methods=['GET'])
-def download_file(error: str = None):
-    if error:
+def download_file():
+    image_name = request.args.get('filename')
+    if image_name == '':
+        return redirect(url_for('index', action_error='No selected file'))
+
+    try:
+        image_url = image_service.get_presigned_url_for_image(image_name)
+    except ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            error = f'File {image_name} does not exist'
+        else:
+            error = f'Error receiving the object: {e}'
         return redirect(url_for('index', action_error=error))
 
-    image_name = request.args.get('filename')
-    image_url = image_service.get_presigned_url_for_image(image_name)
-    response = requests.get(image_url)
+    try:
+        response = requests.get(image_url)
+        response.raise_for_status()
+    except requests.exceptions.Timeout:
+        error = "Timeout expired"
+    except requests.exceptions.ConnectionError:
+        error = "Server connection error"
+    except requests.exceptions.HTTPError as http_err:
+        error = f"HTTP error: {http_err.response.status_code}"
+    except requests.exceptions.RequestException as err:
+        error = f"Request execution error: {err}"
+    except Exception as e:
+        error = f"Unknown error: {e}"
+    else:
+        file_stream = BytesIO(response.content)
+        file_stream.seek(0)
+        return send_file(file_stream, as_attachment=True, download_name=image_name)
 
-    file_stream = BytesIO(response.content)
-    file_stream.seek(0)
-
-    return send_file(file_stream, as_attachment=True, download_name=image_name)
+    return redirect(url_for('index', action_error=error))
 
 
 @app.route('/metadata', methods=['GET'])
 def show_metadata():
     image_name = request.args.get('filename')
+    if image_name == '':
+        return redirect(url_for('index', action_error='No selected file'))
+
     metadata = metadata_service.get_metadata(image_name)
     if metadata:
         return redirect(url_for('index', metadata=metadata.to_str()))

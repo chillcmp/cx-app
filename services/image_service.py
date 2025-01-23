@@ -51,15 +51,3 @@ class ImageService:
                                                               ExpiresIn=self.presigned_url_lifetime_s)
         self.urls_cache[object_name] = {'url': presigned_url, 'expiration': expiration_time}
         return presigned_url
-
-
-def get_metadata_str(file_path):
-    modified_timestamp = os.path.getmtime(file_path)
-    modified_datetime = datetime.fromtimestamp(modified_timestamp)
-
-    metadata = {'name': os.path.basename(file_path),
-                'size': os.path.getsize(file_path),
-                'modified_time': modified_datetime.strftime('%Y-%m-%d'),
-                'extension': os.path.splitext(file_path)[1]}
-    metadata_str = '\n'.join(f'{key}: {value}' for key, value in metadata.items())
-    return metadata_str
