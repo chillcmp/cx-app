@@ -54,6 +54,18 @@
                 document.getElementById('actions-form').method = method;
             }
         </script>
+
+        <form id="subscription-form" method="post">
+            <input id="e-mail" name="email" placeholder="Enter the e-mail" type="text"/>
+
+            {% if request.args.get('subscription_message') %}
+            <p class="info">{{ request.args.get('subscription_message') }}</p>
+            {% endif %}
+
+            <button formaction="/subscribe" id="subscribe-button" type="submit">Subscribe</button>
+            <button formaction="/unsubscribe" id="unsubscribe-button" type="submit">Unsubscribe</button>
+        </form>
+
     </div>
 
     <div class="main">

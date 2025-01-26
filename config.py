@@ -2,6 +2,8 @@ import os
 
 
 class AppConfig:
+    REGION = os.getenv("REGION")
+
     UPLOAD_FOLDER = 'uploads'
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -13,3 +15,5 @@ class AppConfig:
                                + os.getenv('DB_HOST')
                                + ":3306/" + os.getenv('DB_NAME'))
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    TOPIC_ARN = os.getenv("SNS_TOPIC_ARN")

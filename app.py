@@ -9,6 +9,7 @@ from config import AppConfig
 from extensions.database import db
 from services.image_service import ImageService
 from services.metadata_service import MetadataService
+from services.subscription_service import SubscriptionService
 from utils.az_utils import get_region_and_az
 
 pymysql.install_as_MySQLdb()
@@ -19,6 +20,7 @@ db.init_app(app)
 
 image_service = ImageService()
 metadata_service = MetadataService()
+subscription_service = SubscriptionService()
 
 with app.app_context():
     db.create_all()
@@ -119,6 +121,27 @@ def random_metadata():
         return redirect(url_for('index', metadata=metadata.to_str()))
     else:
         return redirect(url_for('index', action_error='No pets in gallery :('))
+
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe_email():
+    email = request.form.get('email')
+    if not email:
+        redirect(url_for('index', subscription_error='Non valid e-mail'))
+
+    message = subscription_service.subscribe_email(email)
+    return redirect(url_for('index', subscription_message=message))
+
+
+@app.route('/unsubscribe', methods=['POST'])
+def unsubscribe_email():
+    email = request.form.get('email')
+    if not email:
+        redirect(url_for('index', subscription_error='Non valid e-mail'))
+
+    message = subscription_service.unsubscribe_email(email)
+    return redirect(url_for('index', subscription_message=message))
+
 
 
 if __name__ == '__main__':

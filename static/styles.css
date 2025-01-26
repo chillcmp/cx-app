@@ -111,6 +111,12 @@ footer p {
     margin: 0;
 }
 
+.info {
+    color: gray;
+    font-size: 10px;
+    margin: 0;
+}
+
 .metadata-block {
     font-family: "Courier New", Courier, monospace;
     background-color: #f9f9f9;
