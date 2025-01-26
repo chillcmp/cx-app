@@ -17,3 +17,4 @@ class AppConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     TOPIC_ARN = os.getenv("SNS_TOPIC_ARN")
+    QUEUE_URL = os.getenv("QUEUE_URL")
