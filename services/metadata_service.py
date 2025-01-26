@@ -13,7 +13,7 @@ class MetadataService:
     def get_random_metadata(self):
         return ImageMetadata.query.order_by(func.rand()).first()
 
-    def write_metadata(self, file: FileStorage):
+    def create_metadata(self, file: FileStorage):
         file.stream.seek(0, 2)
         size_in_bytes = file.stream.tell()
         file.stream.seek(0)
@@ -23,6 +23,9 @@ class MetadataService:
             size=size_in_bytes,
             extension=file.content_type
         )
+        return metadata
+
+    def write_metadata(self, metadata: ImageMetadata):
         db.session.add(metadata)
         db.session.commit()
 

@@ -7,6 +7,7 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 
 from config import AppConfig
 from extensions.database import db
+from services.event_service import EventService
 from services.image_service import ImageService
 from services.metadata_service import MetadataService
 from services.subscription_service import SubscriptionService
@@ -20,6 +21,7 @@ db.init_app(app)
 
 image_service = ImageService()
 metadata_service = MetadataService()
+event_service = EventService()
 subscription_service = SubscriptionService()
 
 with app.app_context():
@@ -49,8 +51,10 @@ def upload_file():
     if not image:
         return redirect(url_for('index', upload_error='No selected file'))
 
-    metadata_service.write_metadata(image)
+    metadata = metadata_service.create_metadata(image)
+    metadata_service.write_metadata(metadata)
     image_service.upload_image(image)
+    event_service.send_image_uploaded_message(metadata)
     return redirect(url_for('index'))
 
 
