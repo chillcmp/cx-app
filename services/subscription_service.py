@@ -34,6 +34,12 @@ class SubscriptionService:
             return 'The e-mail is now unsubscribed'
         return 'The e-mail is not subscribed'
 
+    def publish(self, message):
+        self.sns.publish(
+            TopicArn=self.topic_arn,
+            Message=message
+        )
+
     def _get_subscription_arn_by_email(self, email):
         next_token = None
 

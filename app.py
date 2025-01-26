@@ -1,15 +1,17 @@
+import logging
 from io import BytesIO
 
 import pymysql
 import requests
+from apscheduler.schedulers.background import BackgroundScheduler
 from botocore.exceptions import ClientError
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, send_file
 
 from config import AppConfig
 from extensions.database import db
-from services.event_service import EventService
 from services.image_service import ImageService
 from services.metadata_service import MetadataService
+from services.queue_service import QueueService
 from services.subscription_service import SubscriptionService
 from utils.az_utils import get_region_and_az
 
@@ -21,11 +23,14 @@ db.init_app(app)
 
 image_service = ImageService()
 metadata_service = MetadataService()
-event_service = EventService()
+queue_service = QueueService()
 subscription_service = SubscriptionService()
 
 with app.app_context():
     db.create_all()
+
+
+logger = logging.getLogger()
 
 
 @app.route('/')
@@ -54,7 +59,7 @@ def upload_file():
     metadata = metadata_service.create_metadata(image)
     metadata_service.write_metadata(metadata)
     image_service.upload_image(image)
-    event_service.send_image_uploaded_message(metadata)
+    queue_service.send_image_uploaded_message(metadata)
     return redirect(url_for('index'))
 
 
@@ -147,6 +152,24 @@ def unsubscribe_email():
     return redirect(url_for('index', subscription_message=message))
 
 
+def process_sqs_messages():
+    messages = queue_service.get_all_messages()
+    if not messages:
+        return
+
+    message_bodies = []
+    for message in messages:
+        message_bodies.append(message['Body'])
+        queue_service.delete_message(message['ReceiptHandle'])
+
+    combined_message = '\n'.join(mb for mb in message_bodies)
+    subscription_service.publish(combined_message)
+    logger.debug(f"Messages sent to SNS topic: {len(messages)}")
+
 
 if __name__ == '__main__':
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(process_sqs_messages, 'interval', minutes=1)
+    scheduler.start()
+    
     app.run(debug=True, host='0.0.0.0')

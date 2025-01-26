@@ -6,7 +6,7 @@ from config import AppConfig
 from models.image_metadata import ImageMetadata
 
 
-class EventService:
+class QueueService:
 
     def __init__(self):
         self.sqs = boto3.client('sqs', AppConfig.REGION)
@@ -16,4 +16,17 @@ class EventService:
         self.sqs.send_message(
             QueueUrl=self.queue_url,
             MessageBody=json.dumps(metadata.to_dict())
+        )
+
+    def get_all_messages(self):
+        return self.sqs.receive_message(
+            QueueUrl=self.queue_url,
+            MaxNumberOfMessages=10,
+            WaitTimeSeconds=15
+        ).get('Messages', [])
+
+    def delete_message(self, receipt_handle):
+        self.sqs.delete_message(
+            QueueUrl=self.queue_url,
+            ReceiptHandle=receipt_handle
         )
