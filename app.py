@@ -160,6 +160,7 @@ def unsubscribe_email():
 
 
 def process_sqs_messages():
+    app.logger.info(f"Start processing SQS messages")
     messages = queue_service.get_all_messages()
     if not messages:
         app.logger.info(f"No messages in queue")
@@ -179,22 +180,10 @@ def process_sqs_messages():
         message.delete()
 
 
-def start_scheduler():
-    scheduler = BackgroundScheduler()
-    scheduler.add_job(process_sqs_messages, 'interval', minutes=1)
-    scheduler.start()
-    try:
-        # This is here to simulate application activity (which keeps the main thread alive)
-        while True:
-            pass
-    finally:
-        scheduler.shutdown()
+scheduler = BackgroundScheduler()
+scheduler.add_job(process_sqs_messages, 'interval', minutes=1)
+scheduler.start()
 
 
 if __name__ == '__main__':
-    p = Process(target=start_scheduler)
-    p.start()
-    
     app.run(debug=False, host='0.0.0.0')
-
-    p.join()
