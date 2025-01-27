@@ -9,7 +9,7 @@ from models.image_metadata import ImageMetadata
 class QueueService:
 
     def __init__(self):
-        self.sqs = boto3.client('sqs', AppConfig.REGION)
+        self.sqs = boto3.resource('sqs', AppConfig.REGION)
         self.queue_url = AppConfig.QUEUE_URL
 
     def send_image_uploaded_message(self, metadata: ImageMetadata):
@@ -19,14 +19,9 @@ class QueueService:
         )
 
     def get_all_messages(self):
-        return self.sqs.receive_message(
+        queue = self.sqs.Queue(self.queue_url)
+        return queue.receive_messages(
             QueueUrl=self.queue_url,
             MaxNumberOfMessages=10,
-            WaitTimeSeconds=15
-        ).get('Messages', [])
-
-    def delete_message(self, receipt_handle):
-        self.sqs.delete_message(
-            QueueUrl=self.queue_url,
-            ReceiptHandle=receipt_handle
+            WaitTimeSeconds=20
         )

@@ -20,14 +20,14 @@ pymysql.install_as_MySQLdb()
 app = Flask(__name__)
 app.config.from_object(AppConfig)
 db.init_app(app)
+with app.app_context():
+    db.create_all()
+
 
 image_service = ImageService()
 metadata_service = MetadataService()
 queue_service = QueueService()
 subscription_service = SubscriptionService()
-
-with app.app_context():
-    db.create_all()
 
 
 logger = logging.getLogger()
@@ -159,12 +159,12 @@ def process_sqs_messages():
 
     message_bodies = []
     for message in messages:
-        message_bodies.append(message['Body'])
-        queue_service.delete_message(message['ReceiptHandle'])
+        message_bodies.append(message.body)
+        message.delete()
 
     combined_message = '\n'.join(mb for mb in message_bodies)
     subscription_service.publish(combined_message)
-    logger.debug(f"Messages sent to SNS topic: {len(messages)}")
+    logger.info(f"Messages sent to SNS topic: {len(messages)}")
 
 
 if __name__ == '__main__':
