@@ -17,8 +17,14 @@ from utils.az_utils import get_region_and_az
 
 pymysql.install_as_MySQLdb()
 
+
+handler = logging.StreamHandler()
+handler.setLevel(logging.INFO)
+
 app = Flask(__name__)
 app.config.from_object(AppConfig)
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 db.init_app(app)
 with app.app_context():
     db.create_all()
@@ -155,16 +161,21 @@ def unsubscribe_email():
 def process_sqs_messages():
     messages = queue_service.get_all_messages()
     if not messages:
+        app.logger.info(f"No messages in queue")
         return
 
     message_bodies = []
     for message in messages:
         message_bodies.append(message.body)
-        message.delete()
 
     combined_message = '\n'.join(mb for mb in message_bodies)
+    app.logger.info(f"SQS messages batch: {combined_message}")
+
     subscription_service.publish(combined_message)
-    logger.info(f"Messages sent to SNS topic: {len(messages)}")
+    app.logger.info(f"The batch successfully published to SNS topic")
+
+    for message in messages:
+        message.delete()
 
 
 if __name__ == '__main__':
