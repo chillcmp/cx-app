@@ -1,5 +1,6 @@
 import logging
 from io import BytesIO
+from multiprocessing import Process
 
 import pymysql
 import requests
@@ -178,9 +179,22 @@ def process_sqs_messages():
         message.delete()
 
 
-if __name__ == '__main__':
+def start_scheduler():
     scheduler = BackgroundScheduler()
     scheduler.add_job(process_sqs_messages, 'interval', minutes=1)
     scheduler.start()
+    try:
+        # This is here to simulate application activity (which keeps the main thread alive)
+        while True:
+            pass
+    finally:
+        scheduler.shutdown()
+
+
+if __name__ == '__main__':
+    p = Process(target=start_scheduler)
+    p.start()
     
     app.run(debug=False, host='0.0.0.0')
+
+    p.join()
