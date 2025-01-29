@@ -180,9 +180,9 @@ def process_sqs_messages():
         message.delete()
 
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(process_sqs_messages, 'interval', minutes=1)
-scheduler.start()
+# scheduler = BackgroundScheduler()
+# scheduler.add_job(process_sqs_messages, 'interval', minutes=1)
+# scheduler.start()
 
 
 if __name__ == '__main__':
