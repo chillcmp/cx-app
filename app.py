@@ -1,10 +1,8 @@
 import logging
 from io import BytesIO
-from multiprocessing import Process
 
 import pymysql
 import requests
-from apscheduler.schedulers.background import BackgroundScheduler
 from botocore.exceptions import ClientError
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, send_file
 
@@ -35,9 +33,6 @@ image_service = ImageService()
 metadata_service = MetadataService()
 queue_service = QueueService()
 subscription_service = SubscriptionService()
-
-
-logger = logging.getLogger()
 
 
 @app.route('/')
@@ -157,32 +152,6 @@ def unsubscribe_email():
 
     message = subscription_service.unsubscribe_email(email)
     return redirect(url_for('index', subscription_message=message))
-
-
-def process_sqs_messages():
-    app.logger.info(f"Start processing SQS messages")
-    messages = queue_service.get_all_messages()
-    if not messages:
-        app.logger.info(f"No messages in queue")
-        return
-
-    message_bodies = []
-    for message in messages:
-        message_bodies.append(message.body)
-
-    combined_message = '\n'.join(mb for mb in message_bodies)
-    app.logger.info(f"SQS messages batch: {combined_message}")
-
-    subscription_service.publish(combined_message)
-    app.logger.info(f"The batch successfully published to SNS topic")
-
-    for message in messages:
-        message.delete()
-
-
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(process_sqs_messages, 'interval', minutes=1)
-# scheduler.start()
 
 
 if __name__ == '__main__':

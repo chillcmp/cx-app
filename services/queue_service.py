@@ -14,10 +14,3 @@ class QueueService:
 
     def send_image_uploaded_message(self, metadata: ImageMetadata):
         self.queue.send_message(MessageBody=json.dumps(metadata.to_dict()))
-
-    def get_all_messages(self):
-        return self.queue.receive_messages(
-            QueueUrl=self.queue_url,
-            MaxNumberOfMessages=10,
-            WaitTimeSeconds=20
-        )

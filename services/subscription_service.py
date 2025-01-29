@@ -8,7 +8,6 @@ class SubscriptionService:
     def __init__(self):
         self.sns = boto3.client('sns', AppConfig.REGION)
         self.topic_arn = AppConfig.TOPIC_ARN
-        self.subscriptions_arn = self._get_subscribers()
 
     def _get_subscribers(self):
         response = self.sns.list_subscriptions_by_topic(TopicArn=self.topic_arn)
@@ -18,12 +17,11 @@ class SubscriptionService:
     def subscribe_email(self, email):
         subscription_arn = self._get_subscription_arn_by_email(email)
         if not subscription_arn:
-            response = self.sns.subscribe(
+            self.sns.subscribe(
                 TopicArn=self.topic_arn,
                 Protocol='email',
                 Endpoint=email
             )
-            self.subscriptions_arn[email] = response['SubscriptionArn']
             return 'Subscription confirmation sent'
         return 'The e-mail is already subscribed'
 
@@ -33,12 +31,6 @@ class SubscriptionService:
             self.sns.unsubscribe(SubscriptionArn=subscription_arn)
             return 'The e-mail is now unsubscribed'
         return 'The e-mail is not subscribed'
-
-    def publish(self, message):
-        self.sns.publish(
-            TopicArn=self.topic_arn,
-            Message=message
-        )
 
     def _get_subscription_arn_by_email(self, email):
         next_token = None
