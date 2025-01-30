@@ -17,14 +17,18 @@
 <div class="container">
 
     <div class="sidebar">
-        <form action="/upload" enctype="multipart/form-data" method="post">
+        <form  id="uploads-form" enctype="multipart/form-data" method="post">
             <input id="file-upload" name="file" type="file"/>
-
             {% if request.args.get('upload_error') %}
             <p class="error">{{ request.args.get('upload_error') }}</p>
             {% endif %}
+            <button formaction="/upload" id="upload-button" onclick="setMethod('post', 'uploads-form');" type="submit">Upload</button>
 
-            <button type="submit">Upload</button>
+            {% if request.args.get('is_consistent') %}
+            <p class="{{ 'success' if request.args.get('is_consistent') == 'True' else 'error' }}">
+                {{ request.args.get('consistency_check_response') }}</p>
+            {% endif %}
+            <button formaction="/check_consistency" id="check-consistency-button" onclick="setMethod('get', 'uploads-form');" type="submit">Check consistency</button>
         </form>
 
         <form id="actions-form" method="get">
@@ -34,13 +38,13 @@
             <p class="error">{{ request.args.get('action_error') }}</p>
             {% endif %}
 
-            <button formaction="/delete" id="delete-button" onclick="setMethod('post');" type="submit">Delete</button>
-            <button formaction="/download" id="download-button" onclick="setMethod('get');" type="submit">Download
+            <button formaction="/delete" id="delete-button" onclick="setMethod('post', 'actions-form');" type="submit">Delete</button>
+            <button formaction="/download" id="download-button" onclick="setMethod('get', 'actions-form');" type="submit">Download
             </button>
-            <button formaction="/metadata" id="metadata-button" onclick="setMethod('get');" type="submit">Show
+            <button formaction="/metadata" id="metadata-button" onclick="setMethod('get', 'actions-form');" type="submit">Show
                 metadata
             </button>
-            <button formaction="/random-metadata" id="random-metadata-button" onclick="setMethod('get');" type="submit">
+            <button formaction="/random-metadata" id="random-metadata-button" onclick="setMethod('get', 'actions-form');" type="submit">
                 Show random metadata
             </button>
         </form>
@@ -50,8 +54,8 @@
         {% endif %}
 
         <script>
-            function setMethod(method) {
-                document.getElementById('actions-form').method = method;
+            function setMethod(method, formId) {
+                document.getElementById(formId).method = method;
             }
         </script>
 

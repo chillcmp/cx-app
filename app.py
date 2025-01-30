@@ -9,6 +9,7 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 from config import AppConfig
 from extensions.database import db
 from services.image_service import ImageService
+from services.lambda_service import LambdaService
 from services.metadata_service import MetadataService
 from services.queue_service import QueueService
 from services.subscription_service import SubscriptionService
@@ -33,6 +34,7 @@ image_service = ImageService()
 metadata_service = MetadataService()
 queue_service = QueueService()
 subscription_service = SubscriptionService()
+lambda_service = LambdaService()
 
 
 @app.route('/')
@@ -152,6 +154,13 @@ def unsubscribe_email():
 
     message = subscription_service.unsubscribe_email(email)
     return redirect(url_for('index', subscription_message=message))
+
+
+@app.route("/check_consistency", methods=["GET"])
+def check_consistency():
+    response = lambda_service.invoke()
+    is_consistent = response['consistent']
+    return redirect(url_for('index', is_consistent=is_consistent, consistency_check_response=response))
 
 
 if __name__ == '__main__':

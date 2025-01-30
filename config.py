@@ -18,3 +18,5 @@ class AppConfig:
 
     TOPIC_ARN = os.getenv("SNS_TOPIC_ARN")
     QUEUE_URL = os.getenv("QUEUE_URL")
+
+    LAMBDA_ARN = os.getenv("LAMBDA_ARN")
