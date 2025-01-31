@@ -14,7 +14,8 @@ class LambdaService:
     def invoke(self):
         response = self.lambda_client.invoke(
             FunctionName=self.lambda_name,
-            InvocationType="RequestResponse"
+            InvocationType="RequestResponse",
+            Payload = json.dumps({"detail-type": "Web Application Request"})
         )
         decoded_response = response["Payload"].read().decode("utf-8")
         parsed_response = json.loads(decoded_response)
